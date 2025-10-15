@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Symbiote Air-Ground Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <style>
+        #map {
+            height: 90vh;
+            width: 100%;
+        }
+        h2 {
+            font-family: 'Courier New', monospace;
+        }
+        /* Legend Styles */
+        .info.legend {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .info.legend h4 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        /* RPY Display Styles */
+        #rpy-display {
+            font-family: 'Courier New', monospace;
+            background-color: rgba(240, 240, 240, 0.9);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+        }
+        .rpy-value {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 4px;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            min-width: 100px;
+            text-align: center;
+            margin: 0 5px;
+        }
+        .rpy-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .rpy-container {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <h2>Symbiote Air-Ground Tracker</h2>
+    <div id="map"></div>
+
+    <!-- Roll, Pitch, Yaw Display -->
+    <div id="rpy-display">
+        <div class="rpy-container">
+            <span class="rpy-label">Roll:</span>
+            <span id="roll-value" class="rpy-value">0.00°</span>
+        </div>
+        <div class="rpy-container">
+            <span class="rpy-label">Pitch:</span>
+            <span id="pitch-value" class="rpy-value">0.00°</span>
+        </div>
+        <div class="rpy-container">
+            <span class="rpy-label">Yaw:</span>
+            <span id="yaw-value" class="rpy-value">0.00°</span>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+FROM lang-air-ground-teaming-jp:r36.2.0
+
+# Add user
+ARG user_id
+ARG USER dcist
+RUN useradd -U --uid ${user_id} -ms /bin/bash $USER \
+ && echo "$USER:$USER" | chpasswd \
+ && adduser $USER sudo \
+ && echo "$USER ALL=NOPASSWD: ALL" >> /etc/sudoers.d/$USER
+WORKDIR /home/$USER
+
+RUN pip3 install xformers
+RUN pip3 install supervision pycocotools addict yapf timm
+
+RUN pip3 install git+https://github.com/jhughes50/sam2.git
+
+RUN mkdir -p /home/$USER/models \
+    && cd /home/$USER/models \
+    && wget https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt
+
+RUN git clone https://github.com/IDEA-Research/Grounded-SAM-2 
+
+ARG USE_CUDA=0
+ARG TORCH_ARCH="7.0;7.5;8.0;8.6"
+
+ENV AM_I_DOCKER=True
+ENV BUILD_WITH_CUDA="${USE_CUDA}"
+ENV TORCH_CUDA_ARCH_LIST="${TORCH_ARCH}"
+ENV CUDA_HOME=/usr/local/cuda-12.2/
+# Ensure CUDA is correctly set up
+ENV PATH=/usr/local/cuda-12.2/bin:${PATH}
+ENV LD_LIBRARY_PATH=/usr/local/cuda-12.2/lib64:${LD_LIBRARY_PATH}
+
+RUN pip3 install --upgrade setuptools wheel opencv-python
+
+RUN cd Grounded-SAM-2/gdino_checkpoints \
+ && chmod +x download_ckpts.sh \
+ && ./download_ckpts.sh
+
+RUN mkdir -p ws/src \
+ && sudo chown -R $USER:$USER ws/
+
+RUN sudo chown $USER:$USER ~/.bashrc \
+ && /bin/sh -c 'echo ". /opt/ros/humble/setup.bash" >> ~/.bashrc' \
+ && echo 'export PS1="\[$(tput setaf 2; tput bold)\]\u\[$(tput setaf 7)\]@\[$(tput setaf 3)\]\h\[$(tput setaf 7)\]:\[$(tput setaf 4)\]\W\[$(tput setaf 7)\]$ \[$(tput sgr0)\]"' >> ~/.bashrc

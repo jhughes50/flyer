@@ -1,0 +1,10 @@
+cam0:
+  cam_overlaps: [1]
+  camera_model: pinhole
+  distortion_coeffs: [-0.04132265371684496, 0.05296441336266445, 0.0014111899282670023, -0.0008181527550030858]
+  distortion_model: radtan
+  intrinsics: [1435.1975671350995, 1435.1950984958178, 1029.1844520696527, 780.3864748582407]
+  resolution: [2048, 1536]
+  rostopic: /flir/image_raw/compressed
+  hfov: 71.0
+  vfov: 56.0

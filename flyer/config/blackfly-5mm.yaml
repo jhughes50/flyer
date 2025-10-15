@@ -1,0 +1,15 @@
+origin: [482939.85851084325, 4421267.982947684]
+upright_thresh: 0.05
+odom_topic: "/mavros/global_position/local"
+gps_topic: "/mavros/global_position/raw/fix"
+cam0:
+  is_compressed: True
+  cam_overlaps: []
+  camera_model: pinhole
+  distortion_coeffs: [-0.04862487738643772, 0.056648504217909866, 0.0002587889230307658, -0.000745208124357239]
+  distortion_model: radtan
+  intrinsics: [1409.3656261551553, 1409.2412807927412, 1025.1257452483976, 775.8680519305368]
+  resolution: [2048, 1536]
+  rostopic: "/camera/image_color/compressed"
+  hfov: 69.9
+  vfov: 55.3
