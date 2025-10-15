@@ -13,13 +13,15 @@ import numpy as np
 
 from flyer.segrapher.grounded_sam2 import GroundedSam2Runner
 from flyer.segrapher.segrapher import Segrapher
-from flyer.pixel_localization.pixel_localizer import PixelLocalizer
+from flyer.pixel_localization.localizer import PixelLocalizer
 from flyer.core.rigid_transform import RigidTransform
 from flyer.utils.postprocess import postprocess_labels
 
 from typing import Dict, Optional, List, Tuple
 from dataclasses import dataclass
 from collections import deque
+
+from flyer.utils.kml import create_drone_kml
 
 
 @dataclass
@@ -42,6 +44,7 @@ class FlyerCore:
         self.labels_ = "road ."
 
         #self.segrapher_ = Segrapher({"origin": origin}, calib_path)
+        self.localizer_ = pixel_to_world(calib_path)
 
         self.process_buffer_ = deque(maxlen=100)
         self.process_mutex_ = threading.Lock()
@@ -103,8 +106,19 @@ class FlyerCore:
         xcoords = [0, pair.image.shape[0]]
         ycoords = [0, pair.image.shape[1]]
 
+        utm_coords = np.zeros((2, 2, 3))
+        
         for i in range(2):
             for j in range(2):
-                coord = (xcoords[i], ycoords[i])
-                utm_coord = self.localizer_(coord, pair.odometry.translation, pair.odometry.orientation)
-                
+                coord = np.array((xcoords[i], ycoords[j]))
+                utm_coords[i, j] = self.localizer_(coord, pair.odometry.translation, pair.odometry.orientation)
+        
+        position = utm.to_latlon(pair.odometry.translation[0], pair.odometry.translation[1], 18, 'S')
+        top_left = utm.to_latlon(utm_coords[0, 0, 0], utm_coords[0,0,1], 18 ,'S')
+        bottom_right = utm.to_latlon(utm_coords[-1, -1, 0,], utm_coords[-1,-1,1], 18, 'S')
+        top_right = utm.to_latlon(utm_coords[0, -1, 0,], utm_coords[0,-1,1], 18, 'S')
+        bottom_left = utm.to_latlon(utm_coords[-1,0, 0,], utm_coords[-1,0,1], 18, 'S')
+
+        poses = [position, top_left, bottom_right, top_right, bottom_left]
+
+        create_drone_kml(poses)
