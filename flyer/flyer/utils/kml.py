@@ -16,7 +16,7 @@ def create_drone_kml(coordinates, id_num, output_file="/home/jason/data/"):
     """
     
     # Unpack coordinates
-    drone_pos, top_left, bottom_right, top_right, bottom_left, casualty = coordinates
+    drone_pos, top_left, bottom_right, top_right, bottom_left = coordinates
     
     # KML template
     kml_template = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -55,20 +55,6 @@ def create_drone_kml(coordinates, id_num, output_file="/home/jason/data/"):
       </LabelStyle>
     </Style>
     
-    <!-- Style for casualty -->
-    <Style id="casualtyStyle">
-      <IconStyle>
-        <color>ff0000ff</color>
-        <scale>1.5</scale>
-        <Icon>
-          <href>http://maps.google.com/mapfiles/kml/shapes/caution.png</href>
-        </Icon>
-      </IconStyle>
-      <LabelStyle>
-        <color>ff0000ff</color>
-        <scale>1.2</scale>
-      </LabelStyle>
-    </Style>
     
     <!-- Drone Position -->
     <Placemark>
@@ -117,15 +103,6 @@ def create_drone_kml(coordinates, id_num, output_file="/home/jason/data/"):
       </Point>
     </Placemark>
     
-    <!-- Casualty Location -->
-    <Placemark>
-      <name>Casualty</name>
-      <description>Casualty location identified by drone</description>
-      <styleUrl>#casualtyStyle</styleUrl>
-      <Point>
-        <coordinates>{casualty_lon},{casualty_lat},0</coordinates>
-      </Point>
-    </Placemark>
     
     <!-- Image footprint polygon -->
     <Placemark>
@@ -165,7 +142,6 @@ def create_drone_kml(coordinates, id_num, output_file="/home/jason/data/"):
         tr_lat=top_right[0], tr_lon=top_right[1],
         bl_lat=bottom_left[0], bl_lon=bottom_left[1],
         br_lat=bottom_right[0], br_lon=bottom_right[1],
-        casualty_lat=casualty[0], casualty_lon=casualty[1]
     )
     
     # Write to file

@@ -86,12 +86,12 @@ class FlyerNode(Node):
         self.get_logger().info("[FLYER] Recieved Image Odom Pair", once=True)
         img = ROSConversionUtils.blackfly_compressed_image_msg_to_array(img_msg)
         odom = ROSConversionUtils.odometry_msg_to_transform(odom_msg)
-
         self.pair_ = ImageOdometryPair(img, odom)
 
     def inference_callback(self) -> None:
         self.get_logger().info("[FLYER] Starting inference", once=True)
         if (self.pair_.image is not None and self.pair_.odometry is not None):
-            self.flyer_.push(self.pair_)
-            results = self.flyer_.get_results()
+            self.flyer_._test_localization(self.pair_)
+            #self.flyer_.push(self.pair_)
+            #results = self.flyer_.get_results()
             #TODO publish annotated image and graph

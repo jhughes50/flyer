@@ -78,18 +78,19 @@ ENV CXX=g++-10
 
 RUN pip3 install --upgrade setuptools wheel opencv-python numpy
 
-#RUN cd Grounded-SAM-2 \
-# && python3 -m pip install -e .
-
-#RUN cd Grounded-SAM-2 \
-# && python3 -m pip install --no-build-isolation -e grounding_dino
-
 RUN cd Grounded-SAM-2/gdino_checkpoints \
  && chmod +x download_ckpts.sh \
  && ./download_ckpts.sh
 
+# install glider deps
+RUN sudo apt update \
+ && sudo apt install -y ros-humble-gtsam libgoogle-glog-dev
+
 RUN mkdir -p ws/src \
  && sudo chown -R $USER:$USER ws/
+
+RUN cd ws/src \
+ && git clone https://github.com/KumarRobotics/glider
 
 RUN sudo chown $USER:$USER ~/.bashrc \
  && /bin/sh -c 'echo ". /opt/ros/humble/setup.bash" >> ~/.bashrc' \

@@ -17,6 +17,9 @@ class RigidTransform:
     def from_matrix(cls, arr : np.ndarray) -> 'RigidTransform':
         return cls(arr[:-1,-1], arr[:3,:3])
 
+    def force_alt(self, alt : float) -> None:
+        self.translation[-1] = alt
+
     def inv(self) -> 'RigidTransform':
         r_inv = self.rotation.T
         t_inv = -r_inv @ self.translation
