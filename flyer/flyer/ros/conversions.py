@@ -36,6 +36,7 @@ class ROSConversionUtils:
         orient = msg.pose.pose.orientation
         position = msg.pose.pose.position
         R = Rotation.from_quat([orient.x, orient.y, orient.z, orient.w])
-        T = np.array([position.x, position.y, position.z])
+        #T = np.array([position.x, position.y, position.z])
+        T = np.array([position.x, position.y, 40.0])
         
         return RigidTransform(T, R.as_matrix())

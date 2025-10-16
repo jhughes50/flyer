@@ -4,6 +4,8 @@
 
     Flyer Core
 """
+import cv2
+import utm
 import copy
 import json
 import time
@@ -12,7 +14,7 @@ import threading
 import numpy as np
 
 from flyer.segrapher.grounded_sam2 import GroundedSam2Runner
-from flyer.segrapher.segrapher import Segrapher
+#from flyer.segrapher.segrapher import Segrapher
 from flyer.pixel_localization.localizer import PixelLocalizer
 from flyer.core.rigid_transform import RigidTransform
 from flyer.utils.postprocess import postprocess_labels
@@ -44,7 +46,7 @@ class FlyerCore:
         self.labels_ = "road ."
 
         #self.segrapher_ = Segrapher({"origin": origin}, calib_path)
-        self.localizer_ = pixel_to_world(calib_path)
+        self.localizer_ = PixelLocalizer(calib_path)
 
         self.process_buffer_ = deque(maxlen=100)
         self.process_mutex_ = threading.Lock()
@@ -54,6 +56,7 @@ class FlyerCore:
 
         self.running_ = False 
         self.process_thread_ = None
+        self.count_ = 0
 
     def set_text(self, txt : str) -> None:
         self.labels_ = txt
@@ -107,12 +110,14 @@ class FlyerCore:
         ycoords = [0, pair.image.shape[1]]
 
         utm_coords = np.zeros((2, 2, 3))
-        
+        print("Translation: ", pair.odometry.translation)
+        print("Rotation: ", pair.odometry.rotation)
         for i in range(2):
             for j in range(2):
                 coord = np.array((xcoords[i], ycoords[j]))
-                utm_coords[i, j] = self.localizer_(coord, pair.odometry.translation, pair.odometry.orientation)
-        
+                print("coord: ", coord)
+                utm_coords[i, j] = self.localizer_.pixel_to_world(coord, pair.odometry.translation, pair.odometry.rotation)
+                print(utm_coords[i,j]) 
         position = utm.to_latlon(pair.odometry.translation[0], pair.odometry.translation[1], 18, 'S')
         top_left = utm.to_latlon(utm_coords[0, 0, 0], utm_coords[0,0,1], 18 ,'S')
         bottom_right = utm.to_latlon(utm_coords[-1, -1, 0,], utm_coords[-1,-1,1], 18, 'S')
@@ -121,4 +126,6 @@ class FlyerCore:
 
         poses = [position, top_left, bottom_right, top_right, bottom_left]
 
-        create_drone_kml(poses)
+        create_drone_kml(poses, self.count_)
+        cv2.imwrite("/home/jason/data/img%i.png" %self.count_, pair.image)
+        self.count_ += 1
