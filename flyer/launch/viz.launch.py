@@ -14,12 +14,15 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
 
-    share_dir = get_package_share_directory("symbiote_ag")
+    share_dir = get_package_share_directory("flyer")
 
-    return LaunchDescription([Node(package="symbiote_ag",
-                                   executable="symbiote_map",
-                                   name="symbiote_map",
+    return LaunchDescription([Node(package="flyer",
+                                   executable="flyer_viz",
+                                   name="flyer_viz",
                                    output="screen",
                                    emulate_tty=True,
-                                   #arguments=['--ros-args', '--log-level', 'DEBUG'],
-                                   remappings=[("/gps", "/ublox/fix"),])])
+                                   parameters=[{"directory": share_dir,
+                                                "ip_address": "127.0.0.1",
+                                                "port": 5000}],
+                                   remappings=[("/gps", "/ublox_gps_node/fix"),
+                                               ("/odom", "/glider/odom")])])

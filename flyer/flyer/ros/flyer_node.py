@@ -28,7 +28,7 @@ class FlyerNode(Node):
         gdino_config_path = self.get_parameter("gdino_config_path").value
         self.declare_parameter("calib_config_path", "./")
         calib_config_path = self.get_parameter("calib_config_path").value
-        self.declare_parameter("inference_rate", 1)
+        self.declare_parameter("inference_rate", 1.0)
         rate = self.get_parameter("inference_rate").value
         self.declare_parameter("origin_easting", 0.0)
         origin_easting = self.get_parameter("origin_easting").value

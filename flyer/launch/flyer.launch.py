@@ -53,7 +53,7 @@ def generate_launch_description():
                              "sam2_config_path": sam2_config_path,
                              "calib_config_path": calib_config_path,
                              "use_compressed": False,
-                             "inference_rate": 1,
+                             "inference_rate": 0.5,
                              "downres_output": False}])
 
     return LaunchDescription([use_sim_time_arg, node])

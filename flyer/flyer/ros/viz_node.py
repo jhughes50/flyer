@@ -9,7 +9,7 @@ import rclpy
 import threading
 
 from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
-from symbiote_ag.viz.map import VizNode
+from flyer.viz.map import VizNode
 
 def main(args=None) -> None:
     rclpy.init(args=args)
