@@ -92,6 +92,11 @@ RUN mkdir -p ws/src \
 RUN cd ws/src \
  && git clone https://github.com/KumarRobotics/glider
 
+RUN pip3 install "setuptools==69.5.1" scikit-image utm
+
+RUN sudo apt update \
+ && sudo apt install -y ros-humble-rosbag2-storage-mcap
+
 RUN sudo chown $USER:$USER ~/.bashrc \
  && /bin/sh -c 'echo ". /opt/ros/humble/setup.bash" >> ~/.bashrc' \
  && echo 'export PS1="\[$(tput setaf 2; tput bold)\]\u\[$(tput setaf 7)\]@\[$(tput setaf 3)\]\h\[$(tput setaf 7)\]:\[$(tput setaf 4)\]\W\[$(tput setaf 7)\]$ \[$(tput sgr0)\]"' >> ~/.bashrc

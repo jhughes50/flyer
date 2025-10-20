@@ -4,7 +4,7 @@
 
     Ros Organizer
 """
-
+import time
 import numpy as np
 
 import rclpy
@@ -78,7 +78,7 @@ class FlyerNode(Node):
     def image_odom_callback(self, img_msg : Image, odom_msg : Odometry) -> None:
         self.get_logger().info("[FLYER] Recieved Image Odom Pair", once=True)
         img = ROSConversionUtils.blackfly_image_msg_to_array(img_msg)
-        odom = ROSConversionUtils.odomtry_msg_to_transform(odom_msg)
+        odom = ROSConversionUtils.odometry_msg_to_transform(odom_msg)
 
         self.pair_ = ImageOdometryPair(img, odom)
 
@@ -89,9 +89,23 @@ class FlyerNode(Node):
         self.pair_ = ImageOdometryPair(img, odom)
 
     def inference_callback(self) -> None:
-        self.get_logger().info("[FLYER] Starting inference", once=True)
         if (self.pair_.image is not None and self.pair_.odometry is not None):
-            self.flyer_._test_localization(self.pair_)
-            #self.flyer_.push(self.pair_)
-            #results = self.flyer_.get_results()
-            #TODO publish annotated image and graph
+            #self.flyer_._test_localization(self.pair_)
+            #return
+            self.get_logger().info("[FLYER] Starting inference", once=True)
+            # add the latest image odom pair to the flyer process buffer
+            self.flyer_.push(self.pair_)
+            self.get_logger().info("[FLYER] Buffer Length: %i" %self.flyer_.get_buffer_size())
+            # check if there are any results from flyer
+            results = self.flyer_.get_results()
+            if len(results) > 0:
+                # if there are results publish them
+                for r in results:
+                    graph_msg = String()
+                    graph_msg.data = r.graph
+
+                    img_msg = ROSConversionUtils.array_to_image_msg(r.image)
+ 
+                    self.graph_pub_.publish(graph_msg)
+                    self.annot_pub_.publish(img_msg)
+                    time.sleep(0.1)

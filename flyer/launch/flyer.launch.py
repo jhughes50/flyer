@@ -45,14 +45,14 @@ def generate_launch_description():
                 name="flyer_node",
                 output="screen",
                 emulate_tty=True,
-                remappings=[("/image", "/flir/image_raw/compressed"),
+                remappings=[("/image", "/cam_driver/image_raw"),
                             ("/odom", "/glider/odom"),
                             ("/text", "/text")],
                 parameters=[{"use_sim_time": use_sim_time,
                              "gdino_config_path": gdino_config_path,
                              "sam2_config_path": sam2_config_path,
                              "calib_config_path": calib_config_path,
-                             "use_compressed": True,
+                             "use_compressed": False,
                              "inference_rate": 1,
                              "downres_output": False}])
 

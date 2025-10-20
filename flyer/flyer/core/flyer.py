@@ -14,7 +14,7 @@ import threading
 import numpy as np
 
 from flyer.segrapher.grounded_sam2 import GroundedSam2Runner
-#from flyer.segrapher.segrapher import Segrapher
+from flyer.segrapher.segrapher import Segrapher
 from flyer.pixel_localization.localizer import PixelLocalizer
 from flyer.core.rigid_transform import RigidTransform
 from flyer.utils.postprocess import postprocess_labels
@@ -45,8 +45,10 @@ class FlyerCore:
         self.model_ = GroundedSam2Runner(model_config)
         self.labels_ = "road ."
 
-        #self.segrapher_ = Segrapher({"origin": origin}, calib_path)
+        self.segrapher_ = Segrapher({"origin": origin}, calib_path)
         self.localizer_ = PixelLocalizer(calib_path)
+
+        self.initialize_model()
 
         self.process_buffer_ = deque(maxlen=100)
         self.process_mutex_ = threading.Lock()
@@ -64,7 +66,8 @@ class FlyerCore:
     def start(self) -> None:
         print("[FLYER] Starting Flyer Processing")
         self.running_ = True
-        self.thread_ = threading.Thread(target=self.processor)
+        self.process_thread_ = threading.Thread(target=self.processor)
+        self.process_thread_.start()
 
     def stop(self) -> None:
         print("[FLYER] Stopping Flyer Processing")
@@ -76,9 +79,18 @@ class FlyerCore:
         with self.process_mutex_:
             self.process_buffer_.append(pair)
 
+    def initialize_model(self) -> None:
+        img = np.random.randint(0, 256, size=(1536,2048,3), dtype=np.uint8)
+        try:
+            ret = self.model_.run(img)
+        except AssertionError as e:
+            pass
+        print("[FLYER] Model Initialization Complete")
+
     def processor(self) -> None:
         while self.running_:
             if len(self.process_buffer_) < 1:
+                print("[FLYER] Waiting for images")
                 time.sleep(0.5)
                 continue 
             with self.process_mutex_:
@@ -90,20 +102,23 @@ class FlyerCore:
                 print("No Detections")
                 continue
 
-            #labels = postprocess_labels(ret["labels"])
+            labels = postprocess_labels(ret["labels"])
 
-            ## TODO update this
-            #self.segrapher_.add_objects(labels, ret["centers"], ret["scores"], self.utm_, self.rotation_)
-            #self.segrapher_.add_large_region(labels, ret["centers"], ret["scores"], self.utm_, self.rotation_, ret["masks"])
+            self.segrapher_.add_objects(labels, ret["centers"], ret["scores"], pair.odometry.translation, pair.odometry.rotation)
+            self.segrapher_.add_large_region(labels, ret["centers"], ret["scores"], pair.odometry.translation, pair.odometry.rotation, ret["masks"])
     
-            #with self.result_mutex_:
-            #    self.result_buffer_.append(ImageGraphPair(ret["annotated"], json.dumps(self.segrapher_.data)))
+            with self.result_mutex_:
+                self.result_buffer_.append(ImageGraphPair(ret["annotated"], json.dumps(self.segrapher_.data)))
             
     def get_results(self) -> List[ImageGraphPair]:
         with self.result_mutex_:
             result_copy = copy.deepcopy(self.result_buffer_)
             self.result_buffer_.clear()
         return result_copy
+
+    def get_buffer_size(self) -> int:
+        with self.process_mutex_:
+            return len(self.process_buffer_)
 
     def _test_localization(self, pair : ImageOdometryPair) -> None:
         xcoords = [0, pair.image.shape[0]]

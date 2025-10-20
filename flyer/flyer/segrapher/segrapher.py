@@ -12,7 +12,7 @@ from itertools import combinations
 
 from flyer.utils.graphing import image2graph, road_graph
 from flyer.utils.data_classes import BoundingBox, DetectionResult
-from flyer.pixel_localization.pixel_localizer import PixelLocalizer
+from flyer.pixel_localization.localizer import PixelLocalizer
 
 class Segrapher():
     def __init__(self, config: dict, calib_path : str) -> None: 
@@ -56,7 +56,7 @@ class Segrapher():
                 return True
         return False
 
-    def add_objects(self, labels: list, centers: np.array, scores, utm : tuple, rpy : np.ndarray) -> None:
+    def add_objects(self, labels: list, centers: np.array, scores, utm : np.ndarray, rpy : np.ndarray) -> None:
         if self.obj_count["road"] == 0:
             return
         for i, label in enumerate(labels):
@@ -67,7 +67,8 @@ class Segrapher():
                     self.obj_count[label] += 1
 
                 name = "{}_{}".format(label, self.obj_count[label])
-                e, n = self.pixel_localizer(tuple(centers[i]), utm, rpy)
+                utm_coord = self.pixel_localizer.pixel_to_world(centers[i], utm, rpy)
+                e, n = utm_coord[0], utm_coord[1]
                 #print("Adding object ", label, "  ", label in self.bad_objects)
                 e = e - self.data["origin"][0]
                 n = n - self.data["origin"][1]
@@ -91,7 +92,7 @@ class Segrapher():
 
         return index, contains_road
         
-    def add_large_region(self, labels: list, centers: np.array, scores, utm : tuple, rpy : np.ndarray, masks : np.ndarray) -> None:
+    def add_large_region(self, labels: list, centers: np.array, scores, utm : np.ndarray, rpy : np.ndarray, masks : np.ndarray) -> None:
         accepted = []
         road_idx, contains_road = self.get_largest_road_mask_index(labels, masks)
         print("contains road " , contains_road, " road mask ", road_idx)
@@ -100,8 +101,8 @@ class Segrapher():
                 if label == "road" and road_idx == i:
 
                     name = "{}_{}".format(label, self.obj_count[label])
-                    e, n = self.pixel_localizer(tuple(centers[i]), utm, rpy)
-
+                    utm_coord = self.pixel_localizer.pixel_to_world(centers[i], utm, rpy)
+                    e, n = utm_coord[0], utm_coord[1]
                     e = e - self.data["origin"][0]
                     n = n - self.data["origin"][1]
 

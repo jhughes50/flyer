@@ -12,9 +12,11 @@ class Transforms:
                                     [0., 0., 0., 1.]])
                                    
         # IMU to Camera
-        self.T_cam_imu = RigidTransform.from_matrix(np.array([[0.0, -1.0, 0.0,  0.0],
-                                                              [1.0, 0.0, 0.0, 0.0],
-                                                              [0.0, 0.0, 1.0, 0.0],
+        # this transform makes no sense, why
+        # does it work
+        self.T_cam_imu = RigidTransform.from_matrix(np.array([[1.0, 0.0, 0.0,  0.0],
+                                                              [0.0, 1.0, 0.0, 0.0],
+                                                              [0.0, 0.0, -1.0, 0.0],
                                                               [0.0, 0.0, 0.0,  1.0]]))
         # Camera to IMU 
         self.T_imu_cam = self.T_cam_imu.inv()
