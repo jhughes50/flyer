@@ -1,6 +1,6 @@
 default_text: "road . building . car . orange barrel ."
-sam2_checkpoint: "/home/jason/models/sam2.1_hiera_large.pt"
-sam2_model_config: "//home/jason/ws/src/flyer/config/sam2.1_hiera_l.yaml"
-grounding_dino_model_id: "IDEA-Research/grounding-dino-base" #"/home/dcist/models/grounding-dino-base/snapshots/12bdfa3120f3e7ec7b434d90674b3396eccf88eb/"
+sam2_checkpoint: "/home/dcist/models/sam2.1_hiera_large.pt"
+sam2_model_config: "//home/dcist/ws/src/flyer/config/sam2.1_hiera_l.yaml"
+grounding_dino_model_id: "/home/dcist/models/grounding-dino-base/snapshots/12bdfa3120f3e7ec7b434d90674b3396eccf88eb/"
 box_threshold: 0.2
 text_threshold: 0.2
