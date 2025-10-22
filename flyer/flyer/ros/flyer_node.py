@@ -12,6 +12,7 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Image, CompressedImage
 from std_msgs.msg import String
+from std_srvs.srv import Trigger
 import message_filters
 
 from flyer.core.flyer import FlyerCore, ImageOdometryPair, ImageGraphPair
@@ -46,6 +47,9 @@ class FlyerNode(Node):
         # callback groups
         data_group = rclpy.callback_groups.MutuallyExclusiveCallbackGroup()
         inf_group = rclpy.callback_groups.MutuallyExclusiveCallbackGroup()
+        
+        self.push_flag_ = False
+        self.mapping_service_ = self.create_service(Trigger, "/start_mapping", self.trigger_callback)
 
         # subscribers
         if not use_compressed:
@@ -88,13 +92,29 @@ class FlyerNode(Node):
         odom = ROSConversionUtils.odometry_msg_to_transform(odom_msg)
         self.pair_ = ImageOdometryPair(img, odom)
 
+    def trigger_callback(self, request, response) -> None:
+        if not self.push_flag_:
+            msg = "Pushing to buffer started"
+            self.get_logger().info("[FLYER] Starting Processing")
+            self.push_flag_ = True
+        else:
+            msg = "Pushing to buffer stopped"
+            self.get_logger().info("[FLYER] Stopping Buffer Pushing")
+            self.push_flag_ = False
+
+        response.success = True
+        response.message = msg
+
+        return response
+
     def inference_callback(self) -> None:
         if (self.pair_.image is not None and self.pair_.odometry is not None):
             #self.flyer_._test_localization(self.pair_)
             #return
             self.get_logger().info("[FLYER] Starting inference", once=True)
             # add the latest image odom pair to the flyer process buffer
-            self.flyer_.push(self.pair_)
+            if self.push_flag_:
+                self.flyer_.push(self.pair_)
             self.get_logger().info("[FLYER] Buffer Length: %i" %self.flyer_.get_buffer_size())
             # check if there are any results from flyer
             results = self.flyer_.get_results()
